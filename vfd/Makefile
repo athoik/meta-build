@@ -1,2 +1,2 @@
-obj-m += vfd.o
+obj-m += vfb.o
 
