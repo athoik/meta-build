@@ -11,9 +11,9 @@ before_install:
     - travis_retry sudo apt-get install -y "linux-headers-$(uname -r)"
 
 script:
-- pushd vfd
+- pushd vfb2
 - make -C "/usr/src/linux-headers-$(uname -r)" M="$(pwd)"
-- sudo insmod vfb.ko
+- sudo insmod vfb2.ko
 - popd
 - sudo dmesg
 - sudo fbset -i

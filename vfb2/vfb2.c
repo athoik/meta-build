@@ -1,5 +1,5 @@
 /*
- *  linux/drivers/video/vfb.c -- Virtual frame buffer device
+ *  linux/drivers/video/vfb2.c -- Virtual frame buffer device
  *
  *      Copyright (C) 2002 James Simmons
  *
@@ -86,7 +86,7 @@ static void rvfree(void *mem, unsigned long size)
 	vfree(mem);
 }
 
-static struct fb_var_screeninfo vfb_default = {
+static struct fb_var_screeninfo vfb2_default = {
 	.xres =		640,
 	.yres =		480,
 	.xres_virtual =	640,
@@ -108,7 +108,7 @@ static struct fb_var_screeninfo vfb_default = {
       	.vmode =	FB_VMODE_NONINTERLACED,
 };
 
-static struct fb_fix_screeninfo vfb_fix = {
+static struct fb_fix_screeninfo vfb2_fix = {
 	.id =		"Virtual FB",
 	.type =		FB_TYPE_PACKED_PIXELS,
 	.visual =	FB_VISUAL_PSEUDOCOLOR,
@@ -118,30 +118,30 @@ static struct fb_fix_screeninfo vfb_fix = {
 	.accel =	FB_ACCEL_NONE,
 };
 
-static bool vfb_enable __initdata = 0;	/* disabled by default */
-module_param(vfb_enable, bool, 0);
+static bool vfb2_enable __initdata = 0;	/* disabled by default */
+module_param(vfb2_enable, bool, 0);
 
-static int vfb_check_var(struct fb_var_screeninfo *var,
+static int vfb2_check_var(struct fb_var_screeninfo *var,
 			 struct fb_info *info);
-static int vfb_set_par(struct fb_info *info);
-static int vfb_setcolreg(u_int regno, u_int red, u_int green, u_int blue,
+static int vfb2_set_par(struct fb_info *info);
+static int vfb2_setcolreg(u_int regno, u_int red, u_int green, u_int blue,
 			 u_int transp, struct fb_info *info);
-static int vfb_pan_display(struct fb_var_screeninfo *var,
+static int vfb2_pan_display(struct fb_var_screeninfo *var,
 			   struct fb_info *info);
-static int vfb_mmap(struct fb_info *info,
+static int vfb2_mmap(struct fb_info *info,
 		    struct vm_area_struct *vma);
 
-static struct fb_ops vfb_ops = {
+static struct fb_ops vfb2_ops = {
 	.fb_read        = fb_sys_read,
 	.fb_write       = fb_sys_write,
-	.fb_check_var	= vfb_check_var,
-	.fb_set_par	= vfb_set_par,
-	.fb_setcolreg	= vfb_setcolreg,
-	.fb_pan_display	= vfb_pan_display,
+	.fb_check_var	= vfb2_check_var,
+	.fb_set_par	= vfb2_set_par,
+	.fb_setcolreg	= vfb2_setcolreg,
+	.fb_pan_display	= vfb2_pan_display,
 	.fb_fillrect	= sys_fillrect,
 	.fb_copyarea	= sys_copyarea,
 	.fb_imageblit	= sys_imageblit,
-	.fb_mmap	= vfb_mmap,
+	.fb_mmap	= vfb2_mmap,
 };
 
     /*
@@ -166,7 +166,7 @@ static u_long get_line_length(int xres_virtual, int bpp)
      *  data from it to check this var. 
      */
 
-static int vfb_check_var(struct fb_var_screeninfo *var,
+static int vfb2_check_var(struct fb_var_screeninfo *var,
 			 struct fb_info *info)
 {
 	u_long line_length;
@@ -290,7 +290,7 @@ static int vfb_check_var(struct fb_var_screeninfo *var,
  * the hardware state info->par and fix which can be affected by the 
  * change in par. For this driver it doesn't do much. 
  */
-static int vfb_set_par(struct fb_info *info)
+static int vfb2_set_par(struct fb_info *info)
 {
 	info->fix.line_length = get_line_length(info->var.xres_virtual,
 						info->var.bits_per_pixel);
@@ -303,7 +303,7 @@ static int vfb_set_par(struct fb_info *info)
      *  entries in the var structure). Return != 0 for invalid regno.
      */
 
-static int vfb_setcolreg(u_int regno, u_int red, u_int green, u_int blue,
+static int vfb2_setcolreg(u_int regno, u_int red, u_int green, u_int blue,
 			 u_int transp, struct fb_info *info)
 {
 	if (regno >= 256)	/* no. of hw registers */
@@ -394,7 +394,7 @@ static int vfb_setcolreg(u_int regno, u_int red, u_int green, u_int blue,
      *  This call looks only at xoffset, yoffset and the FB_VMODE_YWRAP flag
      */
 
-static int vfb_pan_display(struct fb_var_screeninfo *var,
+static int vfb2_pan_display(struct fb_var_screeninfo *var,
 			   struct fb_info *info)
 {
 	if (var->vmode & FB_VMODE_YWRAP) {
@@ -419,7 +419,7 @@ static int vfb_pan_display(struct fb_var_screeninfo *var,
      *  Most drivers don't need their own mmap function 
      */
 
-static int vfb_mmap(struct fb_info *info,
+static int vfb2_mmap(struct fb_info *info,
 		    struct vm_area_struct *vma)
 {
 	unsigned long start = vma->vm_start;
@@ -456,18 +456,18 @@ static int vfb_mmap(struct fb_info *info,
 #ifndef MODULE
 /*
  * The virtual framebuffer driver is only enabled if explicitly
- * requested by passing 'video=vfb:' (or any actual options).
+ * requested by passing 'video=vfb2:' (or any actual options).
  */
-static int __init vfb_setup(char *options)
+static int __init vfb2_setup(char *options)
 {
 	char *this_opt;
 
-	vfb_enable = 0;
+	vfb2_enable = 0;
 
 	if (!options)
 		return 1;
 
-	vfb_enable = 1;
+	vfb2_enable = 1;
 
 	if (!*options)
 		return 1;
@@ -477,7 +477,7 @@ static int __init vfb_setup(char *options)
 			continue;
 		/* Test disable for backwards compatibility */
 		if (!strcmp(this_opt, "disable"))
-			vfb_enable = 0;
+			vfb2_enable = 0;
 	}
 	return 1;
 }
@@ -487,7 +487,7 @@ static int __init vfb_setup(char *options)
      *  Initialisation
      */
 
-static int vfb_probe(struct platform_device *dev)
+static int vfb2_probe(struct platform_device *dev)
 {
 	struct fb_info *info;
 	int retval = -ENOMEM;
@@ -503,16 +503,16 @@ static int vfb_probe(struct platform_device *dev)
 		goto err;
 
 	info->screen_base = (char __iomem *)videomemory;
-	info->fbops = &vfb_ops;
+	info->fbops = &vfb2_ops;
 
 	retval = fb_find_mode(&info->var, info, NULL,
 			      NULL, 0, NULL, 8);
 
 	if (!retval || (retval == 4))
-		info->var = vfb_default;
-	vfb_fix.smem_start = (unsigned long) videomemory;
-	vfb_fix.smem_len = videomemorysize;
-	info->fix = vfb_fix;
+		info->var = vfb2_default;
+	vfb2_fix.smem_start = (unsigned long) videomemory;
+	vfb2_fix.smem_len = videomemorysize;
+	info->fix = vfb2_fix;
 	info->pseudo_palette = info->par;
 	info->par = NULL;
 	info->flags = FBINFO_FLAG_DEFAULT;
@@ -538,7 +538,7 @@ err:
 	return retval;
 }
 
-static int vfb_remove(struct platform_device *dev)
+static int vfb2_remove(struct platform_device *dev)
 {
 	struct fb_info *info = platform_get_drvdata(dev);
 
@@ -551,60 +551,60 @@ static int vfb_remove(struct platform_device *dev)
 	return 0;
 }
 
-static struct platform_driver vfb_driver = {
-	.probe	= vfb_probe,
-	.remove = vfb_remove,
+static struct platform_driver vfb2_driver = {
+	.probe	= vfb2_probe,
+	.remove = vfb2_remove,
 	.driver = {
-		.name	= "vfb",
+		.name	= "vfb2",
 	},
 };
 
-static struct platform_device *vfb_device;
+static struct platform_device *vfb2_device;
 
-static int __init vfb_init(void)
+static int __init vfb2_init(void)
 {
 	int ret = 0;
 
 #ifndef MODULE
 	char *option = NULL;
 
-	if (fb_get_options("vfb", &option))
+	if (fb_get_options("vfb2", &option))
 		return -ENODEV;
-	vfb_setup(option);
+	vfb2_setup(option);
 #endif
 
-	if (!vfb_enable)
+	if (!vfb2_enable)
 		return -ENXIO;
 
-	ret = platform_driver_register(&vfb_driver);
+	ret = platform_driver_register(&vfb2_driver);
 
 	if (!ret) {
-		vfb_device = platform_device_alloc("vfb", 0);
+		vfb2_device = platform_device_alloc("vfb2", 0);
 
-		if (vfb_device)
-			ret = platform_device_add(vfb_device);
+		if (vfb2_device)
+			ret = platform_device_add(vfb2_device);
 		else
 			ret = -ENOMEM;
 
 		if (ret) {
-			platform_device_put(vfb_device);
-			platform_driver_unregister(&vfb_driver);
+			platform_device_put(vfb2_device);
+			platform_driver_unregister(&vfb2_driver);
 		}
 	}
 
 	return ret;
 }
 
-module_init(vfb_init);
+module_init(vfb2_init);
 
 #ifdef MODULE
-static void __exit vfb_exit(void)
+static void __exit vfb2_exit(void)
 {
-	platform_device_unregister(vfb_device);
-	platform_driver_unregister(&vfb_driver);
+	platform_device_unregister(vfb2_device);
+	platform_driver_unregister(&vfb2_driver);
 }
 
-module_exit(vfb_exit);
+module_exit(vfb2_exit);
 
 MODULE_LICENSE("GPL");
 #endif				/* MODULE */
