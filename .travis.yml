@@ -8,6 +8,7 @@ before_install:
     - fgrep Failed /tmp/apt.log && sleep 60 && rm /tmp/apt.log && sudo apt-get -qq update 2>&1 | tee /tmp/apt.log || true
     - fgrep Failed /tmp/apt.log && sleep 60 && rm /tmp/apt.log && sudo apt-get -qq update 2>&1 | tee /tmp/apt.log || true
     - travis_retry sudo apt-get install -y fbset v86d
+    - travis_retry sudo apt-get install -y "linux-headers-$(uname -r)"
 
 script:
 - git clone https://github.com/Freescale/linux-module-virtfb.git
