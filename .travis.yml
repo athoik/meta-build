@@ -11,7 +11,7 @@ before_install:
     - travis_retry sudo apt-get install -y "linux-headers-$(uname -r)"
 
 script:
-- git clone https://github.com/athoik/vfd0.git
+- git clone https://github.com/athoik/vfb0.git
 - pushd vfb0
 - make -C "/usr/src/linux-headers-$(uname -r)" M="$(pwd)"
 - sudo insmod vfb0.ko videomemorysize=16777216
