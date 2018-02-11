@@ -11,14 +11,9 @@ before_install:
     - travis_retry sudo apt-get install -y "linux-headers-$(uname -r)"
 
 script:
-- git clone https://github.com/Freescale/linux-module-virtfb.git
-- pushd linux-module-virtfb
-- sed -i 's/VM_RESERVED/VM_DONTEXPAND | VM_DONTDUMP/g' virtual_fb.c
-- sed -i 's/mach-types/types/g' virtual_fb.c
-- export ARCH=x86
-- wget https://raw.githubusercontent.com/torvalds/linux/v4.4/drivers/video/fbdev/vfb.c && mv vfb.c virtual_fb.c
+- pushd vfd
 - make -C "/usr/src/linux-headers-$(uname -r)" M="$(pwd)"
-- sudo insmod virtual_fb.ko
+- sudo insmod vfd.ko
 - popd
 - sudo dmesg
 - sudo fbset -i
