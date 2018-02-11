@@ -361,7 +361,8 @@ static struct fb_info *virtfb_init_fbinfo(struct fb_ops *ops)
 {
 	struct fb_info *fbi;
 
-	dev_err(fbi->device, "virtfb_init_fbinfo\n");
+	pr_info("virtfb_init_fbinfo\n");
+
 	/*
 	 * Allocate sufficient memory for the fb structure
 	 */
@@ -440,7 +441,7 @@ int __init virtfb_init(void)
         u32 *  fbNum;
         int  i, ret = 0;
 
-	dev_err(fbi->device, "virtfb_init\n");
+	pr_info("virtfb_init\n");
 
         /*
          * Initialize FB structures
@@ -450,7 +451,7 @@ int __init virtfb_init(void)
 
 	if (!g_fb_list)
 	{
-		dev_err(fbi->device, "virtfb_init: failed to allocate memory!\n");
+		pr_err("virtfb_init: failed to allocate memory!\n");
 		ret = -ENOMEM;
 		goto init_fbinfo_mem_failed;
 	}
