@@ -11,6 +11,7 @@ before_install:
 
 script:
 - sudo dmesg | grep fb
+- find /lib/modules | grep vesafb
 - sudo modprobe vesafb
 - sudo dmesg | grep fb
 - sudo fbset -i
