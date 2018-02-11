@@ -10,12 +10,16 @@ before_install:
     - travis_retry sudo apt-get install -y fbset v86d
 
 script:
-- sudo dmesg | grep fb
-- find /lib/modules | grep vesafb
-- sudo echo  "options uvesafb mode_option=1280x800-32 scroll=ywrap" > /etc/modprobe.d/uvesafb.conf
-- sudo modprobe uvesafb
-- sudo dmesg | tail -50 
+- git clone https://github.com/Freescale/linux-module-virtfb.git
+- pushd linux-module-virtfb
+- sed -i 's/VM_RESERVED/0x00080000/g' virtual_fb.c
+- sed -i 's/mach-types/types/g' virtual_fb.c
+- make -C "/usr/src/linux-headers-$(uname -r)" M="$(pwd)"
+- insmod virtual_fb.ko vfbcount=1
+- popd
+- sudo dmesg | tail -50
 - sudo fbset -i
+- sudo fbset -xres 1920 -yres 1080
 - sudo lsmod
 - sudo ls -la /dev
 - sudo cat /proc/cmdline
