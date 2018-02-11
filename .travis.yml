@@ -13,7 +13,7 @@ before_install:
 script:
 - pushd vfb2
 - make -C "/usr/src/linux-headers-$(uname -r)" M="$(pwd)"
-- sudo insmod vfb2.ko vfb2_enable:1 videomemorysize=16777216
+- sudo insmod vfb2.ko vfb2_enable=1 videomemorysize=16777216
 - popd
 - sudo dmesg
 - sudo fbset -i
