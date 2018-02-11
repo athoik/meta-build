@@ -16,7 +16,7 @@ script:
 - sed -i 's/VM_RESERVED/0x00080000/g' virtual_fb.c
 - sed -i 's/mach-types/types/g' virtual_fb.c
 - make -C "/usr/src/linux-headers-$(uname -r)" M="$(pwd)"
-- insmod virtual_fb.ko vfbcount=1
+- sudo insmod virtual_fb.ko vfbcount=1
 - popd
 - sudo dmesg | tail -50
 - sudo fbset -i
