@@ -11,13 +11,15 @@ before_install:
     - travis_retry sudo apt-get install -y "linux-headers-$(uname -r)"
 
 script:
-- pushd vfb2
+- git clone https://github.com/athoik/vfd0.git
+- pushd vfb0
 - make -C "/usr/src/linux-headers-$(uname -r)" M="$(pwd)"
-- sudo insmod vfb2.ko vfb2_enable=1 videomemorysize=16777216
+- sudo insmod vfb0.ko videomemorysize=16777216
 - popd
-- sudo dmesg
+- sudo dmesg | tail -50
 - sudo fbset -i
-- sudo fbset -xres 1920 -yres 1080
+- sudo fbset -xres 1920 -yres 1080  -depth 32
+- sudo fbset -i
 - sudo lsmod
 - sudo ls -la /dev
 - sudo cat /proc/cmdline
