@@ -301,6 +301,8 @@ static struct fb_ops virtfb_ops = {
  */
 static int virtfb_map_video_memory(struct fb_info *fbi)
 {
+	dev_err(fbi->device, "virtfb_map_video_memory\n");
+
 	if (fbi->fix.smem_len < fbi->var.yres_virtual * fbi->fix.line_length)
 		fbi->fix.smem_len = fbi->var.yres_virtual *
 				    fbi->fix.line_length;
@@ -336,6 +338,8 @@ static int virtfb_map_video_memory(struct fb_info *fbi)
  */
 static int virtfb_unmap_video_memory(struct fb_info *fbi)
 {
+	dev_err(fbi->device, "virtfb_unmap_video_memory\n");
+
 	dma_free_writecombine(fbi->device, fbi->fix.smem_len,
 			      fbi->screen_base, fbi->fix.smem_start);
 	fbi->screen_base = 0;
@@ -357,6 +361,7 @@ static struct fb_info *virtfb_init_fbinfo(struct fb_ops *ops)
 {
 	struct fb_info *fbi;
 
+	dev_err(fbi->device, "virtfb_init_fbinfo\n");
 	/*
 	 * Allocate sufficient memory for the fb structure
 	 */
@@ -379,6 +384,8 @@ static int virtfb_register(struct fb_info *fbi, unsigned int id)
 {
 	struct fb_videomode m;
 	int ret = 0;
+
+	dev_err(fbi->device, "virtfb_register\n");
 
 	//TODO: Set framebuffer ID
 	sprintf(fbi->fix.id, "virt_fb%d", id);
@@ -416,7 +423,7 @@ err0:
 
 static void virtfb_unregister(struct fb_info *fbi)
 {
-
+	dev_err(fbi->device, "virtfb_unregister\n");
 	unregister_framebuffer(fbi);
 }
 
@@ -433,11 +440,21 @@ int __init virtfb_init(void)
         u32 *  fbNum;
         int  i, ret = 0;
 
+	dev_err(fbi->device, "virtfb_init\n");
+
         /*
          * Initialize FB structures
          */
 
 	g_fb_list = kzalloc(sizeof(struct fb_info*) * vfbcount, GFP_KERNEL);
+
+	if (!g_fb_list)
+	{
+		dev_err(fbi->device, "virtfb_init: failed to allocate memory!\n");
+		ret = -ENOMEM;
+		goto init_fbinfo_mem_failed;
+	}
+
         for(i=0;i<vfbcount;i++)
         {
                 g_fb_list[i] = virtfb_init_fbinfo(&virtfb_ops);
@@ -466,6 +483,7 @@ init_fbinfo_failed:
         		framebuffer_release(g_fb_list[i]);
 		}
 	}
+init_fbinfo_mem_failed:
         return ret;
 
 }
