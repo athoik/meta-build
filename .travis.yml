@@ -1,0 +1,18 @@
+language: cpp
+
+sudo: required
+dist: trusty
+
+before_install:
+    - sudo apt-get -qq update 2>&1 | tee /tmp/apt.log
+    - fgrep Failed /tmp/apt.log && sleep 60 && rm /tmp/apt.log && sudo apt-get -qq update 2>&1 | tee /tmp/apt.log || true
+    - fgrep Failed /tmp/apt.log && sleep 60 && rm /tmp/apt.log && sudo apt-get -qq update 2>&1 | tee /tmp/apt.log || true
+    - travis_retry sudo apt-get install -y fbset
+
+script:
+- sudo fbset -i
+- sudo lsmod
+- sudo ls -la /dev
+- sudo cat /proc/cmdline
+- echo done!
+
