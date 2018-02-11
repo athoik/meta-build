@@ -307,6 +307,7 @@ static int virtfb_map_video_memory(struct fb_info *fbi)
 		fbi->fix.smem_len = fbi->var.yres_virtual *
 				    fbi->fix.line_length;
 
+	dev_err(fbi->device, "virtfb_map_video_memory:dma_alloc_writecombine\n");
 	fbi->screen_base = dma_alloc_writecombine(fbi->device,
 				fbi->fix.smem_len,
 				(dma_addr_t *)&fbi->fix.smem_start,
@@ -323,6 +324,7 @@ static int virtfb_map_video_memory(struct fb_info *fbi)
 
 	fbi->screen_size = fbi->fix.smem_len;
 
+	dev_err(fbi->device, "virtfb_map_video_memory:memset\n");
 	/* Clear the screen */
 	memset((char *)fbi->screen_base, 0, fbi->fix.smem_len);
 
