@@ -10,6 +10,9 @@ before_install:
     - travis_retry sudo apt-get install -y fbset
 
 script:
+- sudo dmesg | grep fb
+- sudo modprobe vesafb
+- sudo dmesg | grep fb
 - sudo fbset -i
 - sudo lsmod
 - sudo ls -la /dev
