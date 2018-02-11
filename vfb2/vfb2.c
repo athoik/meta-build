@@ -23,6 +23,10 @@
 #include <linux/fb.h>
 #include <linux/init.h>
 
+#include "sysfillrect.h"
+#include "syscopyarea.h"
+#include "sysimgblt.h"
+
     /*
      *  RAM we reserve for the frame buffer. This defines the maximum screen
      *  size
@@ -31,7 +35,6 @@
      */
 
 #define VIDEOMEMSIZE	(1*1024*1024)	/* 1 MB */
-#define MODULE 1
 
 static void *videomemory;
 static u_long videomemorysize = VIDEOMEMSIZE;
@@ -131,16 +134,100 @@ static int vfb2_pan_display(struct fb_var_screeninfo *var,
 static int vfb2_mmap(struct fb_info *info,
 		    struct vm_area_struct *vma);
 
+static ssize_t vfb2_sys_read(struct fb_info *info, char __user *buf, size_t count,
+		    loff_t *ppos)
+{
+	unsigned long p = *ppos;
+	void *src;
+	int err = 0;
+	unsigned long total_size;
+
+	if (info->state != FBINFO_STATE_RUNNING)
+		return -EPERM;
+
+	total_size = info->screen_size;
+
+	if (total_size == 0)
+		total_size = info->fix.smem_len;
+
+	if (p >= total_size)
+		return 0;
+
+	if (count >= total_size)
+		count = total_size;
+
+	if (count + p > total_size)
+		count = total_size - p;
+
+	src = (void __force *)(info->screen_base + p);
+
+	if (info->fbops->fb_sync)
+		info->fbops->fb_sync(info);
+
+	if (copy_to_user(buf, src, count))
+		err = -EFAULT;
+
+	if  (!err)
+		*ppos += count;
+
+	return (err) ? err : count;
+}
+
+static ssize_t vfb2_sys_write(struct fb_info *info, const char __user *buf,
+		     size_t count, loff_t *ppos)
+{
+	unsigned long p = *ppos;
+	void *dst;
+	int err = 0;
+	unsigned long total_size;
+
+	if (info->state != FBINFO_STATE_RUNNING)
+		return -EPERM;
+
+	total_size = info->screen_size;
+
+	if (total_size == 0)
+		total_size = info->fix.smem_len;
+
+	if (p > total_size)
+		return -EFBIG;
+
+	if (count > total_size) {
+		err = -EFBIG;
+		count = total_size;
+	}
+
+	if (count + p > total_size) {
+		if (!err)
+			err = -ENOSPC;
+
+		count = total_size - p;
+	}
+
+	dst = (void __force *) (info->screen_base + p);
+
+	if (info->fbops->fb_sync)
+		info->fbops->fb_sync(info);
+
+	if (copy_from_user(dst, buf, count))
+		err = -EFAULT;
+
+	if  (!err)
+		*ppos += count;
+
+	return (err) ? err : count;
+}
+
 static struct fb_ops vfb2_ops = {
-	.fb_read        = fb_sys_read,
-	.fb_write       = fb_sys_write,
+	.fb_read        = vfb2_sys_read,
+	.fb_write       = vfb2_sys_write,
 	.fb_check_var	= vfb2_check_var,
 	.fb_set_par	= vfb2_set_par,
 	.fb_setcolreg	= vfb2_setcolreg,
 	.fb_pan_display	= vfb2_pan_display,
-	.fb_fillrect	= sys_fillrect,
-	.fb_copyarea	= sys_copyarea,
-	.fb_imageblit	= sys_imageblit,
+	.fb_fillrect	= vfb2_sys_fillrect,
+	.fb_copyarea	= vfb2_sys_copyarea,
+	.fb_imageblit	= vfb2_sys_imageblit,
 	.fb_mmap	= vfb2_mmap,
 };
 
@@ -453,36 +540,6 @@ static int vfb2_mmap(struct fb_info *info,
 
 }
 
-#ifndef MODULE
-/*
- * The virtual framebuffer driver is only enabled if explicitly
- * requested by passing 'video=vfb2:' (or any actual options).
- */
-static int __init vfb2_setup(char *options)
-{
-	char *this_opt;
-
-	vfb2_enable = 0;
-
-	if (!options)
-		return 1;
-
-	vfb2_enable = 1;
-
-	if (!*options)
-		return 1;
-
-	while ((this_opt = strsep(&options, ",")) != NULL) {
-		if (!*this_opt)
-			continue;
-		/* Test disable for backwards compatibility */
-		if (!strcmp(this_opt, "disable"))
-			vfb2_enable = 0;
-	}
-	return 1;
-}
-#endif  /*  MODULE  */
-
     /*
      *  Initialisation
      */
@@ -565,14 +622,6 @@ static int __init vfb2_init(void)
 {
 	int ret = 0;
 
-#ifndef MODULE
-	char *option = NULL;
-
-	if (fb_get_options("vfb2", &option))
-		return -ENODEV;
-	vfb2_setup(option);
-#endif
-
 	if (!vfb2_enable)
 		return -ENXIO;
 
@@ -597,7 +646,6 @@ static int __init vfb2_init(void)
 
 module_init(vfb2_init);
 
-#ifdef MODULE
 static void __exit vfb2_exit(void)
 {
 	platform_device_unregister(vfb2_device);
@@ -607,4 +655,3 @@ static void __exit vfb2_exit(void)
 module_exit(vfb2_exit);
 
 MODULE_LICENSE("GPL");
-#endif				/* MODULE */
