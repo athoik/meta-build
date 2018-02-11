@@ -13,7 +13,7 @@ before_install:
 script:
 - pushd vfd
 - make -C "/usr/src/linux-headers-$(uname -r)" M="$(pwd)"
-- sudo insmod vfd.ko
+- sudo insmod vfb.ko
 - popd
 - sudo dmesg
 - sudo fbset -i
