@@ -17,9 +17,12 @@ script:
 - sed -i 's/mach-types/types/g' virtual_fb.c
 - export ARCH=x86
 - make -C "/usr/src/linux-headers-$(uname -r)" M="$(pwd)"
+- sudo mknod /dev/fb0 c 29 0
 - sudo insmod virtual_fb.ko
 - popd
 - sudo dmesg
+- sudo mv /dev/fb0 /dev/fb20
+- sudo mv /dev/fb1 /def/fb0 
 - sudo fbset -i
 - sudo fbset -xres 1920 -yres 1080
 - sudo lsmod
