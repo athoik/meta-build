@@ -37,6 +37,7 @@ def get_urls():
     time.sleep(SLEEP_TIMEOUT)
     return urls
 
-urls = '\n'.join(get_urls())
+time_created = time.strftime("%Y-%m-%dT%H:%M:%S", time.gmtime())
+urls = time_created + '\n' + '\n'.join(get_urls())
 eprint(urls)
 open("satellites.xml", "w").write(urls)
