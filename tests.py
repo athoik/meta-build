@@ -37,4 +37,6 @@ def get_urls():
     time.sleep(SLEEP_TIMEOUT)
     return urls
 
-eprint('\n'.join(get_urls()))
+urls = '\n'.join(get_urls())
+eprint(urls)
+open("satellites.xml", "w").write(urls)
