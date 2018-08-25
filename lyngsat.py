@@ -120,8 +120,9 @@ class Lyngsat(object):
 
     def __process_urls(self):
         """ it prossesing urls and appends results on allsat list """
-        for url in self.urls:
-            eprint('Getting %s ...' % url)
+        cnt = len(self.urls)
+        for idx, url in enumerate(self.urls, 1):
+            eprint('Getting %s ... (%d of %d)' % (url, idx, cnt))
             sats = Satellites(url, self.feeds)
             eprint(repr(sats))
             for sat in sats:
@@ -159,6 +160,7 @@ class Satellite(object):
         self.__name = name
         self.__position = position
         self.transponders = set(transponders)
+        self.dupl = len(transponders) - len(self.transponders)
 
     @property
     def name(self):
@@ -172,8 +174,8 @@ class Satellite(object):
 
     def __repr__(self):
         feeds = len([x for x in self.transponders if x.is_feed])
-        params = (self.name, self.position, len(self.transponders), feeds)
-        return 'Satellite(name=%s, position=%d, transponders=%d, feeds=%d)' % params
+        params = (self.name, self.position, len(self.transponders), feeds, self.dupl)
+        return 'Satellite(name=%s, position=%d, transponders=%d, feeds=%d, duplicates=%d)' % params
 
     def __str__(self):
         tmp = []
