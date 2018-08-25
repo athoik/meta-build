@@ -1,6 +1,6 @@
-2018-08-25T10:56:56
+2018-08-25T11:29:54
 
-LXML:
+lxml 12:
 https://www.lyngsat.com/Intelsat-22.html
 https://www.lyngsat.com/Eutelsat-70B.html
 https://www.lyngsat.com/Intelsat-20.html
@@ -13,10 +13,8 @@ https://www.lyngsat.com/KazSat-3.html
 https://www.lyngsat.com/NSS-12.html
 https://www.lyngsat.com/Express-AT1.html
 https://www.lyngsat.com/G-Sat-8-16-and-Yamal-402.html
-https://www.lyngsat.com/Express-AM6.html
-https://www.lyngsat.com/Al-Yah-1.html
 
-html.parser:
+html.parser 46:
 https://www.lyngsat.com/Intelsat-22.html
 https://www.lyngsat.com/Eutelsat-70B.html
 https://www.lyngsat.com/Intelsat-20.html
@@ -64,7 +62,7 @@ https://www.lyngsat.com/Astra-4A-and-SES-5.html
 https://www.lyngsat.com/Eutelsat-3B-and-Rascom-QAF-1R.html
 https://www.lyngsat.com/BulgariaSat-1.html
 
-html5lib:
+html5lib 46:
 https://www.lyngsat.com/Intelsat-22.html
 https://www.lyngsat.com/Eutelsat-70B.html
 https://www.lyngsat.com/Intelsat-20.html
