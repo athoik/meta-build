@@ -5,10 +5,9 @@ cache: pip
 install:
 - pip install requests
 - pip install beautifulsoup4
-- pip install lxml
 - pip install html5lib
 script:
-- python tests.py
+- python lyngsat.py
 after_success:
 - ./push.sh
 env:
