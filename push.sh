@@ -6,6 +6,7 @@ setup_git() {
 }
 
 commit_files() {
+  git checkout master
   git add satellites.xml
   git commit --message "Travis build: $TRAVIS_BUILD_NUMBER"
 }
