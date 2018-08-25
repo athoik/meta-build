@@ -37,6 +37,9 @@ def get_urls():
     time.sleep(SLEEP_TIMEOUT)
     return urls
 
+res = SESSION.get('https://httpbin.org/headers')
+eprint(res.text)
+
 time_created = time.strftime("%Y-%m-%dT%H:%M:%S", time.gmtime())
 urls = time_created + '\n' + '\n'.join(get_urls())
 eprint(urls)
