@@ -15,6 +15,7 @@ from requests.adapters import HTTPAdapter
 SESSION = requests.Session()
 SESSION.mount('http://', HTTPAdapter(max_retries=5))
 SESSION.mount('https://', HTTPAdapter(max_retries=5))
+SESSION.headers.update({'User-Agent': 'Mozilla/5.0'})
 
 SLEEP_TIMEOUT = 10
 
@@ -43,8 +44,9 @@ eprint(res.text)
 
 time_created = time.strftime("%Y-%m-%dT%H:%M:%S", time.gmtime())
 data = time_created
-data += '\n\nLXML:\n' + '\n'.join(get_urls('lxml'))
-data += '\n\nhtml.parser:\n' + '\n'.join(get_urls('html.parser'))
-data += '\n\nhtml5lib:\n' + '\n'.join(get_urls('html5lib'))
+for p in ('lxml', 'html.parser', 'html5lib'):
+    d = get_urls(p)
+    data += '\n\n%s %d:\n' % (p, len(d))
+    data += '\n'.join(d)
 eprint(data)
 open("satellites.xml", "w").write(data)
