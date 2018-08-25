@@ -147,7 +147,7 @@ class Lyngsat(object):
         tmp_xml.append('<satellites>')
         for sat in sorted(self.allsat, key=lambda s: (s.position)):
             tmp_xml.append(str(sat))
-        tmp_xml.append('</satellites>')
+        tmp_xml.append('</satellites>\n')
         return '\n'.join(tmp_xml)
 
 
