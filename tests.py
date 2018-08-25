@@ -31,6 +31,7 @@ def get_urls():
     eprint('Getting %s region...' % region)
     url = 'http://www.lyngsat.com/' + region + '.html'
     res = SESSION.get(url)
+    eprint(res.text)
     page = BeautifulSoup(res.text, 'lxml')
     for tds in page.find_all('td', td_filter):
         urls.append(tds.find('a')['href'])
