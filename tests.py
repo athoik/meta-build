@@ -42,6 +42,9 @@ res = SESSION.get('https://httpbin.org/headers')
 eprint(res.text)
 
 time_created = time.strftime("%Y-%m-%dT%H:%M:%S", time.gmtime())
-urls = time_created + '\n\nLXML:\n' + '\n'.join(get_urls('lxml')) + '\n\nhtml.parser:\n' + '\n'.join(get_urls('html.parser'))
-eprint(urls)
-open("satellites.xml", "w").write(urls)
+data = time_created
+data += '\n\nLXML:\n' + '\n'.join(get_urls('lxml'))
+data += '\n\nhtml.parser:\n' + '\n'.join(get_urls('html.parser'))
+data += '\n\nhtml5lib:\n' + '\n'.join(get_urls('html5lib'))
+eprint(data)
+open("satellites.xml", "w").write(data)
