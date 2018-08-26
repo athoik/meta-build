@@ -188,7 +188,8 @@ class Satellite(object):
         tmp = []
         tmp.append('\t<sat name="%s" flags="1" position="%d">' %
                    (escape(self.name), self.position))
-        keys = lambda t: (t.freq, t.is_id, t.pls_code, t.t2mi_plp_id)
+        keys = lambda t: (t.freq, t.symbol_rate, t.pol, t.fec, t.system,
+                          t.modulation, t.is_id, t.pls_code, t.t2mi_plp_id)
         for tpr in sorted(self.transponders, key=keys):
             tmp.append(str(tpr))
         tmp.append('\t</sat>')
