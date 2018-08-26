@@ -22,8 +22,8 @@ POLARISATION = {'H': 0, 'V': 1, 'L': 2, 'R': 3}
 SYSTEMS = {'DVB-S': 0, 'DVB-S2': 1, 'DSS': -1}
 FECS = {'auto': 0, '1/2': 1, '2/3': 2, '3/4': 3, '5/6': 4, '7/8':
         5, '8/9': 6, '3/5': 7, '4/5': 8, '9/10': 9, '6/7': 10, 'none': 15}
-MODULATIONS = {'auto': 0, 'QPSK': 1, '8PSK':
-               2, 'QAM16': 3, '16APSK': 4, '32APSK': 5, '8PSK Turbo': -1}
+MODULATIONS = {'auto': 0, 'QPSK': 1, '8PSK':2, 'QAM16': 3, '16APSK': 4,
+               '32APSK': 5, '8PSK Turbo': -1, 'Turbo': -1}
 SLEEP_TIMEOUT = 10
 PARSER = 'html5lib'
 
@@ -319,6 +319,9 @@ class Transponder(object):
         if self.modulation == -1: # 8PSK Turbo handle it as feed!
             self.modulation = 0
             self.__is_feed = True
+        if self.modulation > 1 and self.system == 0:
+            eprint("[FIXME] %s autocorecting DVB-S to DVB-S2 due to modulation different QPSK" % repr(self))
+            self.system = 1
 
     @property
     def is_valid(self):
@@ -419,7 +422,7 @@ class Transponder(object):
             self.modulation = MODULATIONS.get(sfm[1], 1)
 
     def __hash__(self):
-        return hash((self.freq, self.is_id, self.pls_code, self.t2mi_plp_id))
+        return hash((self.freq, self.pol, self.is_id, self.pls_code, self.t2mi_plp_id))
 
     def __eq__(self, other):
         if isinstance(other, self.__class__):
