@@ -19,7 +19,8 @@ __license__ = "GPL"
 __version__ = "1.0.0"
 
 POLARISATION = {'H': 0, 'V': 1, 'L': 2, 'R': 3}
-SYSTEMS = {'DVB-S': 0, 'DVB-S2': 1, 'DSS': -1}
+SYSTEMS = {'DVB-S': 0, 'DVB-S2': 1, 'DSS': -1, 'ISDB': -1,
+           'Digicipher 2': -1, 'ABS': -1}
 FECS = {'auto': 0, '1/2': 1, '2/3': 2, '3/4': 3, '5/6': 4, '7/8':
         5, '8/9': 6, '3/5': 7, '4/5': 8, '9/10': 9, '6/7': 10, 'none': 15}
 MODULATIONS = {'auto': 0, 'QPSK': 1, '8PSK':2, 'QAM16': 3, '16APSK': 4,
@@ -303,7 +304,7 @@ class Transponder(object):
         if not values[1].find('b'):  # frequency is always bold
             self.__is_valid = False
             return
-        if values[3].attrs.get('bgcolor','') == '#d0d0d0': # feed
+        if values[3].attrs.get('bgcolor','') in ('#d0d0d0', '#ffaaff'): # feed, internet/interactive
             self.__is_feed = True
         self.modulation = 1  # Modulation_QPSK
         self.system = 0  # System_DVB_S
@@ -321,15 +322,15 @@ class Transponder(object):
         self.__get_symbolrate_fec_modulation(values)
         if self.__is_valid:
             self.__is_valid = self.freq > 0 and self.symbol_rate > 0
-        if self.system == -1: # DSS handle it as DVB-S feed!
+        if self.modulation > 1 and self.system == 0:
+            eprint('[FIXME] %s auto-correcting DVB-S to DVB-S2 because modulation is not QPSK' % repr(self))
+            self.system = 1
+        if self.system == -1: # non DVB system handle it as DVB-S feed!
             self.system = 0
             self.__is_feed = True
         if self.modulation == -1: # 8PSK Turbo handle it as feed!
             self.modulation = 0
             self.__is_feed = True
-        if self.modulation > 1 and self.system == 0:
-            eprint('[FIXME] %s auto-correcting DVB-S to DVB-S2 because modulation is not QPSK' % repr(self))
-            self.system = 1
 
     @property
     def is_valid(self):
@@ -395,7 +396,7 @@ class Transponder(object):
         else:
             freq, pol = (0, 0)
             eprint('[FIXME] getFrequencyPolarisation: %s' % freq_pol)
-        self.freq = int(float(freq) * 1000)
+        self.freq = int(round(float(freq) * 1000))
         self.pol = POLARISATION.get(pol, 0)
 
     def __get_system_mis_pls(self, values):
@@ -427,7 +428,7 @@ class Transponder(object):
             self.symbol_rate = int(srate) * 1000
             self.fec = FECS.get(fec, 0)
         if len(sfm) >= 2:
-            self.modulation = MODULATIONS.get(sfm[1], 1)
+            self.modulation = MODULATIONS.get(sfm[1].strip(), 1)
 
     def __hash__(self):
         return hash((self.freq, self.symbol_rate, self.pol, self.fec,
