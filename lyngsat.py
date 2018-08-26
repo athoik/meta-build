@@ -121,9 +121,16 @@ class Lyngsat(object):
     def __process_urls(self):
         """ it prossesing urls and appends results on allsat list """
         cnt = len(self.urls)
-        for idx, url in enumerate(self.urls, 1):
+        urls = list(self.urls)
+        for idx, url in enumerate(urls, 1):
             eprint('Getting %s ... (%d of %d)' % (url, idx, cnt))
-            sats = Satellites(url, self.feeds)
+            try:
+                sats = Satellites(url, self.feeds)
+            except requests.exceptions.ConnectionError as cer:
+                urls.append(url)
+                eprint('[WARN] ConnectionError occured %s, will retry %s later...' % (str(cer), url))
+                time.sleep(SLEEP_TIMEOUT + SLEEP_TIMEOUT)
+                continue
             eprint(repr(sats))
             for sat in sats:
                 eprint(repr(sat))
@@ -422,7 +429,9 @@ class Transponder(object):
             self.modulation = MODULATIONS.get(sfm[1], 1)
 
     def __hash__(self):
-        return hash((self.freq, self.pol, self.is_id, self.pls_code, self.t2mi_plp_id))
+        return hash((self.freq, self.symbol_rate, self.pol, self.fec,
+                     self.system, self.modulation, self.is_id, self.pls_code,
+                     self.t2mi_plp_id))
 
     def __eq__(self, other):
         if isinstance(other, self.__class__):
