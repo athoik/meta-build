@@ -320,7 +320,7 @@ class Transponder(object):
             self.modulation = 0
             self.__is_feed = True
         if self.modulation > 1 and self.system == 0:
-            eprint('[FIXME] %s autocorecting DVB-S to DVB-S2 due to modulation different QPSK' % repr(self))
+            eprint('[FIXME] %s auto-correcting DVB-S to DVB-S2 because modulation is not QPSK' % repr(self))
             self.system = 1
 
     @property
@@ -429,6 +429,16 @@ class Transponder(object):
             return hash(self) == hash(other)
         else:
             return False
+
+    def __repr__(self):
+        rev = lambda d, v: d.keys()[d.values().index(v)]
+        spol = rev(POLARISATION, self.pol)
+        ssys = rev(SYSTEMS, self.system)
+        sfec = rev(FECS, self.fec)
+        smod = rev(MODULATIONS, self.modulation)
+        params = (self.freq/1000.0, spol, ssys, self.symbol_rate/1000, sfec,
+                  smod, self.is_id, self.pls_code, self.t2mi_plp_id)
+        return 'Transponder(%g %s %s SR %d %s %s MIS %d Gold %d T2MI %d)' % params
 
     def __str__(self):
         if not self.__is_valid:
