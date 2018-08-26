@@ -127,9 +127,9 @@ class Lyngsat(object):
             eprint('Getting %s ... (%d of %d)' % (url, idx, cnt))
             try:
                 sats = Satellites(url, self.feeds)
-            except requests.exceptions.ConnectionError as cer:
+            except (requests.exceptions.ConnectionError, requests.exceptions.HTTPError, SatelliteNameError) as cer:
                 urls.append(url)
-                eprint('[WARN] ConnectionError occured %s, will retry %s later...' % (str(cer), url))
+                eprint('[WARN] Exception occured %s, will retry %s later...' % (repr(cer), url))
                 time.sleep(SLEEP_TIMEOUT + SLEEP_TIMEOUT)
                 continue
             eprint(repr(sats))
@@ -197,6 +197,10 @@ class Satellite(object):
         return '\n'.join(tmp)
 
 
+class SatelliteNameError(Exception):
+    """ We are going to raise this if parsing satellite name fails."""
+    pass
+
 class Satellites(object):
     """
     Parse satellites on the given URL handling the fixed positions
@@ -216,6 +220,7 @@ class Satellites(object):
         self.name = ''
         self.position = 0
         res = SESSION.get(url)
+        res.raise_for_status()
         page = BeautifulSoup(res.text, PARSER)
         self.__get_name_position(page)
         for all_tr in page.find_all('tr'):
@@ -248,6 +253,8 @@ class Satellites(object):
             self.name = match.group(1)
             pos = int(float(match.group(2)) * (
                 -10 if match.group(3) == 'W' else 10))
+        else:
+            raise SatelliteNameError('Invalid satellite name %s' % title.encode('utf-8'))
         # check for fixed positions
         fixed = lambda x: pos <= x + 3 and pos >= x - 3
         self.position = next(iter([x for x in self.__fixed if fixed(x)]), pos)
