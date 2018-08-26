@@ -320,7 +320,7 @@ class Transponder(object):
             self.modulation = 0
             self.__is_feed = True
         if self.modulation > 1 and self.system == 0:
-            eprint("[FIXME] %s autocorecting DVB-S to DVB-S2 due to modulation different QPSK" % repr(self))
+            eprint('[FIXME] %s autocorecting DVB-S to DVB-S2 due to modulation different QPSK' % repr(self))
             self.system = 1
 
     @property
