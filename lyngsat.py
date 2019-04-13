@@ -127,9 +127,12 @@ class Lyngsat(object):
             eprint('Getting %s ... (%d of %d)' % (url, idx, cnt))
             try:
                 sats = Satellites(url, self.feeds)
-            except (requests.exceptions.ConnectionError, requests.exceptions.HTTPError, SatelliteNameError) as cer:
+            except (requests.exceptions.ConnectionError,
+                    requests.exceptions.HTTPError,
+                    SatelliteNameError) as cer:
                 urls.append(url)
-                eprint('[WARN] Exception occured %s, will retry %s later...' % (repr(cer), url))
+                eprint('[WARN] Exception occured %s, will retry %s later...' %
+                       (repr(cer), url))
                 time.sleep(SLEEP_TIMEOUT + SLEEP_TIMEOUT)
                 continue
             eprint(repr(sats))
@@ -182,15 +185,19 @@ class Satellite(object):
 
     def __repr__(self):
         feeds = len([x for x in self.transponders if x.is_feed])
-        params = (self.name, self.position, len(self.transponders), feeds, self.dupl)
-        return 'Satellite(name=%s, position=%d, transponders=%d, feeds=%d, duplicates=%d)' % params
+        params = (self.name, self.position, len(self.transponders), feeds,
+                  self.dupl)
+        msg = ('Satellite(name=%s, position=%d, transponders=%d, feeds=%d, '
+               'duplicates=%d)')
+        return msg % params
 
     def __str__(self):
         tmp = []
         tmp.append('\t<sat name="%s" flags="1" position="%d">' %
                    (escape(self.name), self.position))
         keys = lambda t: (t.freq, t.symbol_rate, t.pol, t.fec, t.system,
-                          t.modulation, t.is_id, t.pls_code, t.t2mi_plp_id)
+                          t.modulation, t.is_id, t.pls_code, t.t2mi_plp_id,
+                          t.t2mi_pid)
         for tpr in sorted(self.transponders, key=keys):
             tmp.append(str(tpr))
         tmp.append('\t</sat>')
@@ -235,6 +242,9 @@ class Satellites(object):
             band = tpr.band
             if band not in self.transponders:
                 self.transponders[band] = []
+            # 40.5W uses T2MI PID 64 but lyngsat has no info to parse
+            if self.position == -405:
+                tpr.t2mi_pid = 64
             self.transponders[band].append(tpr)
             self.tp_num += 1
 
@@ -301,6 +311,10 @@ class Transponder(object):
     """
     This class is responsible to parse transponder details from the given row
     """
+
+    # pylint: disable=too-many-instance-attributes
+    # we need to have all transponder parameters in variables
+
     __is_valid = True
     __is_feed = False
 
@@ -311,7 +325,8 @@ class Transponder(object):
         if not values[1].find('b'):  # frequency is always bold
             self.__is_valid = False
             return
-        if values[3].attrs.get('bgcolor','') in ('#d0d0d0', '#ffaaff'): # feed, internet/interactive
+        # feed, internet/interactive
+        if values[3].attrs.get('bgcolor', '') in ('#d0d0d0', '#ffaaff'):
             self.__is_feed = True
         self.modulation = 1  # Modulation_QPSK
         self.system = 0  # System_DVB_S
@@ -322,7 +337,8 @@ class Transponder(object):
         self.is_id = -1  # NO_STREAM_ID_FILTER
         self.pls_code = 0
         self.pls_mode = 1  # PLS_Gold
-        self.t2mi_plp_id = -1  # not used by e2 yet
+        self.t2mi_plp_id = -1  # No T2MI
+        self.t2mi_pid = 4096 # default T2MI PID
         # process values
         self.__get_frequency_polarisation(values)
         self.__get_system_mis_pls(values)
@@ -440,7 +456,7 @@ class Transponder(object):
     def __hash__(self):
         return hash((self.freq, self.symbol_rate, self.pol, self.fec,
                      self.system, self.modulation, self.is_id, self.pls_code,
-                     self.t2mi_plp_id))
+                     self.t2mi_plp_id, self.t2mi_pid))
 
     def __eq__(self, other):
         if isinstance(other, self.__class__):
@@ -449,14 +465,15 @@ class Transponder(object):
             return False
 
     def __repr__(self):
-        rev = lambda d, v: d.keys()[d.values().index(v)]
+        rev = lambda d, v: list(d.keys())[list(d.values()).index(v)]
         spol = rev(POLARISATION, self.pol)
         ssys = rev(SYSTEMS, self.system)
         sfec = rev(FECS, self.fec)
         smod = rev(MODULATIONS, self.modulation)
         params = (self.freq/1000.0, spol, ssys, self.symbol_rate/1000, sfec,
-                  smod, self.is_id, self.pls_code, self.t2mi_plp_id)
-        return 'Transponder(%g %s %s SR %d %s %s MIS %d Gold %d T2MI %d)' % params
+                  smod, self.is_id, self.pls_code, self.t2mi_plp_id,
+                  self.t2mi_pid)
+        return 'Transponder(%g %s %s SR %d %s %s MIS %d Gold %d T2MI %d PID %d)' % params
 
     def __str__(self):
         if not self.__is_valid:
@@ -476,6 +493,7 @@ class Transponder(object):
             tmp_tp.append('pls_code="%s"' % self.pls_code)
         if self.t2mi_plp_id > -1:
             tmp_tp.append('t2mi_plp_id="%d"' % self.t2mi_plp_id)
+            tmp_tp.append('t2mi_pid="%d"' % self.t2mi_pid)
         tmp_tp.append('/>')
         return ' '.join(tmp_tp)
 
@@ -501,7 +519,8 @@ def cli_args():
 def main():
     """ main program """
     args = cli_args()
-    lyngsat_parser = Lyngsat(satlist=args.region, urls=args.url, feeds=args.with_feeds)
+    lyngsat_parser = Lyngsat(satlist=args.region, urls=args.url,
+                             feeds=args.with_feeds)
     eprint(repr(lyngsat_parser))
     lyngsat_parser.save(args.filename)
 
